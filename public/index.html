@@ -8,10 +8,20 @@
   <script src="bundle.js" defer></script>
 </head>
 <body>
-  <ul id="list"></ul>
-  <form id="new-task-form">
-    <input type="text" id="new-task-title">
-    <button type="submit">Add</button>
-  </form>
+
+  <div id="whenSignedOut">
+    <button id="signInBtn">Sign In</button>
+  </div>
+
+  <div id="whenSignedIn">
+    <div id="userDetails"></div>
+    <ul id="list"></ul>
+    <form id="new-task-form">
+      <input type="text" id="new-task-title">
+      <button type="submit">Add</button>
+    </form>
+    <button id="signOutBtn">Sign Out</button>
+  </div>
+
 </body>
 </html>
