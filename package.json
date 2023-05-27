@@ -4,6 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "serve": "webpack-dev-server",
+    "watch": "webpack --watch",
     "build": "webpack"
   },
   "author": "",
@@ -13,7 +15,8 @@
     "ts-loader": "^9.4.3",
     "typescript": "^5.0.4",
     "webpack": "^5.84.1",
-    "webpack-cli": "^5.1.1"
+    "webpack-cli": "^5.1.1",
+    "webpack-dev-server": "^4.15.0"
   },
   "dependencies": {
     "firebase": "^9.22.1",
