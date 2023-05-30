@@ -1,24 +1,17 @@
 import { v4 as uuidV4 } from "uuid";
+import { Database, child, get, getDatabase, onValue, ref, set } from "firebase/database";
+import { User } from "firebase/auth";
 
-export function mainTodo(){
-  type Task = {
+
+ export type Task = {
     id: string,
     title: string,
     completed: boolean,
     createdAt: Date,
   }
-  
-  console.log(uuidV4());
-  
-  const list = document.querySelector<HTMLUListElement>("#list");
-  const form = document.querySelector("#new-task-form") as HTMLFormElement | null;
-  const input = document.querySelector<HTMLInputElement>("#new-task-title");
-  const tasks : Task[] = loadTasks();
-  tasks.forEach(addListItem);
-  
-  form?.addEventListener("submit", e => {
-    e.preventDefault();
-    if(input?.value == "" || input?.value == null) return;
+
+  export function createTL(input: HTMLInputElement, tasks: Task[]) : Task | null{
+    if(input?.value == "" || input?.value == null) return null;
     const newTask = {
       id: uuidV4(),
       title:input.value,
@@ -26,34 +19,40 @@ export function mainTodo(){
       createdAt: new Date(),
     }
     tasks.push(newTask);
-    saveTasks()
-    addListItem(newTask);
     input.value = "";
-  });
+    return newTask;
+  }
   
-  function addListItem(task: Task){
+  export function addListItem(task: Task, db: Database, userID: string, tasks: Task[], listRef: HTMLUListElement) {
     const item = document.createElement("li");
     const label = document.createElement("label");
     const check = document.createElement("input");
     check.type = "checkbox";
     check.addEventListener("change", () => {
       task.completed = check.checked;
-      saveTasks()
-      console.log(tasks);
+      saveTasks(db, userID, tasks);
     });
     check.checked = task.completed;
     label.append(check, task.title);
     item.append(label);
-    list?.append(item);
+    listRef.append(item);
   };
   
-  function saveTasks(){
-    localStorage.setItem("TASKS", JSON.stringify(tasks));
+  export function saveTasks(db: Database, userID: string, tasks: Task[]){
+    set(ref(db, 'users/' + userID + '/savedTasks'), {
+      savedTasks: tasks,
+    });
+    // localStorage.setItem("TASKS", JSON.stringify(tasks));
   }
   
-  function loadTasks() : Task[]{
-    const taskJSON = localStorage.getItem("TASKS");
-    if (taskJSON == null) return [];
-    return JSON.parse(taskJSON);
+  export function loadTasks(db: Database, userID: string, tasks: Task[]){
+    let data : Task[];
+    get(child(ref(db), 'users/' + userID + '/savedTasks')).then((snapshot) => {
+      if(snapshot.exists()) {
+        data = snapshot.val().savedTasks;
+        data.forEach(e => {
+          tasks.push(e);
+        });
+      }
+    });
   }
-}
