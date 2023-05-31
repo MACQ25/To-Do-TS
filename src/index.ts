@@ -1,16 +1,10 @@
-import { Task, loadTasks, addListItem, createTL, saveTasks } from "./todo";
+import { Task, loadTasks, addListItem, saveTasks, createTask } from "./todo";
 import { FirebaseApp, initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
-import { Database, child, getDatabase, ref, set, get } from "firebase/database";
+import { Database, child, getDatabase, ref, set, get, push, onChildAdded, update } from "firebase/database";
 import { getFirestore } from "firebase/firestore";
+import { v4 as uuidV4 } from "uuid";
 
-function writeUserData(userId: string, name: string | null, email: string | null, fireRef: FirebaseApp) {
-    const db = getDatabase();
-    set(ref(db, 'users/' + userId), {
-      username: name,
-      email: email,
-    });
-  }
 
 var firebaseConfig = {
     apiKey: "AIzaSyDU2JcTurCRB9v1_y-O2-Sb2wRDnYcb154",
@@ -43,24 +37,17 @@ var tasks : Task[] = [];
 
 
 signInBtn.onclick = () => signInWithPopup(auth, provider).then((result) => {
-    // This gives you a Google Access Token. You can use it to access the Google API.
     const credential = GoogleAuthProvider.credentialFromResult(result);
     const token = credential?.accessToken;
-    // The signed-in user info.
     const user = result.user;
-    // IdP data available using getAdditionalUserInfo(result)
   }).catch((error) => {
-    // Handle Errors here.
     const errorCode = error.code;
     const errorMessage = error.message;
-    // The email of the user's account used.
     const email = error.customData.email;
-    // The AuthCredential type that was used.
     const credential = GoogleAuthProvider.credentialFromError(error);
-    // ...
   });;
 
-/* 
+/**  
 This is a way of testing if data can be entered into the database or not, for debbugging purposes only
 
 const dataBut = document.querySelector<HTMLButtonElement>("#addStuff");
@@ -70,53 +57,51 @@ dataBut.onclick = function() {
     console.log("I am being clicked");
     n++;
 }; 
-*/
+**/
 
 onAuthStateChanged(auth, user => {
     if(user){
-        // signed in
         whenSignedIn.hidden = false;
         whenSignedOut.hidden = true;
-        
-        const dbRef = ref(getDatabase());
+        const dbRef = ref(getDatabase(firebase));
+        const taskRef = ref(database, 'users/' + user.uid + '/tasks');
+
         get(child(dbRef, `users/${user.uid}`)).then((snapshot) => {
           if(snapshot.exists()){
-            //load list items from server
             loadTasks(database, user.uid, tasks);
+            tasks.forEach((e) => {list.append(addListItem(e, database, user.uid, tasks))})
           }else{
-            writeUserData(user.uid, user.displayName, user.email, firebase);
+            set(ref(database, 'users/' + user.uid), {
+              username: user.displayName,
+              email: user.email,
+            });
           }
         }).catch((error) => {
           console.log(error);
         });
 
         userDetails.innerHTML = `<h3>Hello ${user.displayName}!</h3> <p>User ID: ${user.uid}</p>`;
-      
-        //add initial List Items
-        setTimeout(function(){
-          tasks.forEach((item) => {addListItem(item, database, user.uid, tasks, list)})
-        }, 1000);
 
+        onChildAdded(taskRef, (data) => {console.log(data)})
+      
         //if user wants to save more items
         form?.addEventListener("submit", e => {
             e.preventDefault();
-            if(input != null) {
-                const taskToAdd = createTL(input, tasks)
-                if(taskToAdd != null) addListItem(taskToAdd, database, user.uid, tasks, list);
-                saveTasks(database, user.uid, tasks);
+            if(input != null && (input.value != "" && input.value != null)) {
+              let newTask = createTask(input);
+              push(taskRef, newTask);
             }
           });
 
+
         // For user to log out
         signOutBtn.onclick = () => {
-          saveTasks(database, user.uid, tasks)
           signOut(auth);
           list?.childNodes.forEach(e => e.remove());
           tasks = [];
         };
     }
     else{
-        // signed out
         whenSignedIn.hidden = true;
         whenSignedOut.hidden = false;
     }

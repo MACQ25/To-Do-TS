@@ -1,29 +1,28 @@
 import { v4 as uuidV4 } from "uuid";
-import { Database, child, get, getDatabase, onValue, ref, set } from "firebase/database";
+import { Database, child, get, getDatabase, onValue, push, ref, set } from "firebase/database";
 import { User } from "firebase/auth";
 
 
- export type Task = {
-    id: string,
-    title: string,
-    completed: boolean,
-    createdAt: Date,
+ export class Task {
+    createdAt: Date
+    completed: boolean;    
+    id: string;
+    title: string;
+
+    constructor(myId : string, myTitle: string, myCompleted: boolean, myDate: Date){
+      this.id = myId;
+      this.title = myTitle;
+      this.completed = myCompleted;
+      this.createdAt = myDate;
+    }
   }
 
-  export function createTL(input: HTMLInputElement, tasks: Task[]) : Task | null{
-    if(input?.value == "" || input?.value == null) return null;
-    const newTask = {
-      id: uuidV4(),
-      title:input.value,
-      completed: false,
-      createdAt: new Date(),
-    }
-    tasks.push(newTask);
-    input.value = "";
+  export function createTask(input: HTMLInputElement) : Task {
+    const newTask = new Task(uuidV4(), input.value, false, new Date());
     return newTask;
   }
   
-  export function addListItem(task: Task, db: Database, userID: string, tasks: Task[], listRef: HTMLUListElement) {
+  export function addListItem(task: Task, db: Database, userID: string, tasks: any[]) : HTMLElement {
     const item = document.createElement("li");
     const label = document.createElement("label");
     const check = document.createElement("input");
@@ -35,24 +34,23 @@ import { User } from "firebase/auth";
     check.checked = task.completed;
     label.append(check, task.title);
     item.append(label);
-    listRef.append(item);
+    return item;
   };
+
   
-  export function saveTasks(db: Database, userID: string, tasks: Task[]){
+  export function saveTasks(db: Database, userID: string, tasks: any[]){
     set(ref(db, 'users/' + userID + '/savedTasks'), {
       savedTasks: tasks,
     });
     // localStorage.setItem("TASKS", JSON.stringify(tasks));
   }
   
-  export function loadTasks(db: Database, userID: string, tasks: Task[]){
+  export function loadTasks(db: Database, userID: string, tasks: any[]){
     let data : Task[];
     get(child(ref(db), 'users/' + userID + '/savedTasks')).then((snapshot) => {
       if(snapshot.exists()) {
-        data = snapshot.val().savedTasks;
-        data.forEach(e => {
-          tasks.push(e);
-        });
+        Object.values(snapshot.val()).forEach((e) => {tasks.push(e)});
+        console.log(tasks);
       }
     });
   }
