@@ -69,7 +69,6 @@ onAuthStateChanged(auth, user => {
         get(child(dbRef, `users/${user.uid}`)).then((snapshot) => {
           if(snapshot.exists()){
             loadTasks(database, user.uid, tasks);
-            tasks.forEach((e) => {list.append(addListItem(e, database, user.uid, tasks))})
           }else{
             set(ref(database, 'users/' + user.uid), {
               username: user.displayName,
@@ -82,7 +81,7 @@ onAuthStateChanged(auth, user => {
 
         userDetails.innerHTML = `<h3>Hello ${user.displayName}!</h3> <p>User ID: ${user.uid}</p>`;
 
-        onChildAdded(taskRef, (data) => {console.log(data)})
+        onChildAdded(taskRef, (data) => {list.append(addListItem(data.val(), database, user.uid, tasks));});
       
         //if user wants to save more items
         form?.addEventListener("submit", e => {
