@@ -1,5 +1,5 @@
 import { v4 as uuidV4 } from "uuid";
-import { Database, child, get, getDatabase, onValue, push, ref, set } from "firebase/database";
+import { DataSnapshot, Database, child, equalTo, get, getDatabase, onValue, push, ref, set, query, orderByValue, orderByKey, orderByChild, update } from "firebase/database";
 import { User } from "firebase/auth";
 
 
@@ -22,7 +22,7 @@ import { User } from "firebase/auth";
     return newTask;
   }
   
-  export function addListItem(obj: object, db: Database, userID: string, tasks: any[]) : HTMLElement {
+  export function addListItem(obj: object, db: Database, userID: string) : HTMLElement {
     const task = obj as Task;
     const item = document.createElement("li");
     const label = document.createElement("label");
@@ -30,7 +30,7 @@ import { User } from "firebase/auth";
     check.type = "checkbox";
     check.addEventListener("change", () => {
       task.completed = check.checked;
-      saveTasks(db, userID, tasks);
+      saveTasks(db, userID, task);
     });
     check.checked = task.completed;
     label.append(check, task.title);
@@ -39,12 +39,11 @@ import { User } from "firebase/auth";
   };
 
   
-  export function saveTasks(db: Database, userID: string, tasks: any[]){
-    set(ref(db, 'users/' + userID + '/tasks'), {
-      savedTasks: tasks,
-    });
-    // localStorage.setItem("TASKS", JSON.stringify(tasks));
-  }
+  export function saveTasks(db: Database, userID: string, taskUpd: Task){
+    let taskToUp: string | null;
+    get(ref(db, 'users/' + userID + '/tasks/')).then(data => data.forEach(e => {if(e.val().id == taskUpd.id) taskToUp = e.key}));
+    setTimeout(() => update(ref(db, 'users/' + userID + '/tasks/' + taskToUp), taskUpd), 5);
+  };
   
   export function loadTasks(db: Database, userID: string, tasks: any[]){
     get(child(ref(db), 'users/' + userID + '/tasks')).then((snapshot) => {

@@ -1,9 +1,7 @@
 import { Task, loadTasks, addListItem, saveTasks, createTask } from "./todo";
-import { FirebaseApp, initializeApp } from "firebase/app";
+import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
-import { Database, child, getDatabase, ref, set, get, push, onChildAdded, update } from "firebase/database";
-import { getFirestore } from "firebase/firestore";
-import { v4 as uuidV4 } from "uuid";
+import { child, getDatabase, ref, set, get, push, onChildAdded } from "firebase/database";
 
 
 var firebaseConfig = {
@@ -81,7 +79,7 @@ onAuthStateChanged(auth, user => {
 
         userDetails.innerHTML = `<h3>Hello ${user.displayName}!</h3> <p>User ID: ${user.uid}</p>`;
 
-        onChildAdded(taskRef, (data) => {list.append(addListItem(data.val(), database, user.uid, tasks));});
+        onChildAdded(taskRef, (data) => {list.append(addListItem(data.val(), database, user.uid));});
       
         //if user wants to save more items
         form?.addEventListener("submit", e => {
@@ -95,9 +93,9 @@ onAuthStateChanged(auth, user => {
 
         // For user to log out
         signOutBtn.onclick = () => {
-          signOut(auth);
-          list?.childNodes.forEach(e => e.remove());
+          while(list.hasChildNodes()){list.firstChild?.remove()}
           tasks = [];
+          signOut(auth);
         };
     }
     else{
