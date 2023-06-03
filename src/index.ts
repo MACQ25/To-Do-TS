@@ -2,7 +2,9 @@ import { Task, loadTasks, addListItem, saveTasks, createTask } from "./todo";
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import { child, getDatabase, ref, set, get, push, onChildAdded } from "firebase/database";
+import corsModule from "cors";
 
+const cors = corsModule({origin:true});
 
 var firebaseConfig = {
     apiKey: "AIzaSyDU2JcTurCRB9v1_y-O2-Sb2wRDnYcb154",
@@ -32,7 +34,7 @@ const form = document.querySelector("#new-task-form") as HTMLFormElement | null;
 const input = document.querySelector<HTMLInputElement>("#new-task-title");
 
 var tasks : Task[] = [];
-
+let er;
 
 signInBtn.onclick = () => signInWithPopup(auth, provider).then((result) => {
     const credential = GoogleAuthProvider.credentialFromResult(result);
@@ -44,6 +46,17 @@ signInBtn.onclick = () => signInWithPopup(auth, provider).then((result) => {
     const email = error.customData.email;
     const credential = GoogleAuthProvider.credentialFromError(error);
   });;
+
+          // For user to log out
+  signOutBtn.onclick = () => {
+    //while(list.hasChildNodes()){list.firstChild?.remove()}
+    tasks = [];
+    signOut(auth).then(() => {
+
+    }).catch((error)=>{
+      console.log(error);
+    });
+  };
 
 /**  
 This is a way of testing if data can be entered into the database or not, for debbugging purposes only
@@ -89,14 +102,6 @@ onAuthStateChanged(auth, user => {
               push(taskRef, newTask);
             }
           });
-
-
-        // For user to log out
-        signOutBtn.onclick = () => {
-          while(list.hasChildNodes()){list.firstChild?.remove()}
-          tasks = [];
-          signOut(auth);
-        };
     }
     else{
         whenSignedIn.hidden = true;
