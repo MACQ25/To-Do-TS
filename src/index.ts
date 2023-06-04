@@ -1,10 +1,12 @@
-import { Task, loadTasks, addListItem, saveTasks, createTask } from "./todo";
+import { Task, loadTasks, addListItem, saveTasks, createTask } from "./to-do";
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import { child, getDatabase, ref, set, get, push, onChildAdded } from "firebase/database";
 import corsModule from "cors";
+import { friendReq } from "./friendList";
 
 const cors = corsModule({origin:true});
+
 
 var firebaseConfig = {
     apiKey: "AIzaSyDU2JcTurCRB9v1_y-O2-Sb2wRDnYcb154",
@@ -21,6 +23,7 @@ const auth = getAuth(firebase);
 const provider = new GoogleAuthProvider();
 const database = getDatabase(firebase);
 
+
 const whenSignedIn = document.getElementById("whenSignedIn") as HTMLDivElement;
 const whenSignedOut = document.getElementById("whenSignedOut") as HTMLDivElement;
 
@@ -28,47 +31,30 @@ const signInBtn = document.getElementById("signInBtn") as HTMLButtonElement;
 const signOutBtn = document.getElementById("signOutBtn") as HTMLButtonElement;
 
 const userDetails = document.getElementById("userDetails") as HTMLDivElement;
-
 const list = document.querySelector("#list") as HTMLUListElement;
-const form = document.querySelector("#new-task-form") as HTMLFormElement | null;
-const input = document.querySelector<HTMLInputElement>("#new-task-title");
+
+const taskForm = document.querySelector("#new-task-form") as HTMLFormElement | null;
+const taskInput = document.querySelector<HTMLInputElement>("#new-task-title");
+
+const friendForm = document.querySelector("#add-friend-form") as HTMLFormElement
+const queryFilter = document.querySelector("#search-filter") as HTMLSelectElement
+const userIdent = document.querySelector("#identifier") as HTMLInputElement
+const friendList = document.querySelector("#friendsList") as HTMLUListElement
+const notif = document.querySelector("#notif") as HTMLDivElement
 
 var tasks : Task[] = [];
-let er;
 
-signInBtn.onclick = () => signInWithPopup(auth, provider).then((result) => {
-    const credential = GoogleAuthProvider.credentialFromResult(result);
-    const token = credential?.accessToken;
-    const user = result.user;
-  }).catch((error) => {
-    const errorCode = error.code;
-    const errorMessage = error.message;
-    const email = error.customData.email;
-    const credential = GoogleAuthProvider.credentialFromError(error);
-  });;
+signInBtn.onclick = () => signInWithPopup(auth, provider);
 
-          // For user to log out
   signOutBtn.onclick = () => {
-    //while(list.hasChildNodes()){list.firstChild?.remove()}
+    while(list.hasChildNodes()){list.firstChild?.remove()}
     tasks = [];
-    signOut(auth).then(() => {
-
+    auth.signOut().then(() => {
+      document.location.reload();
     }).catch((error)=>{
       console.log(error);
     });
   };
-
-/**  
-This is a way of testing if data can be entered into the database or not, for debbugging purposes only
-
-const dataBut = document.querySelector<HTMLButtonElement>("#addStuff");
-var n = 0;
-dataBut.onclick = function() {
-    writeUserData(`${420 + n}`, "Potato", "Potato@proton.db", firebase);
-    console.log("I am being clicked");
-    n++;
-}; 
-**/
 
 onAuthStateChanged(auth, user => {
     if(user){
@@ -95,13 +81,22 @@ onAuthStateChanged(auth, user => {
         onChildAdded(taskRef, (data) => {list.append(addListItem(data.val(), database, user.uid));});
       
         //if user wants to save more items
-        form?.addEventListener("submit", e => {
+        taskForm?.addEventListener("submit", e => {
             e.preventDefault();
-            if(input != null && (input.value != "" && input.value != null)) {
-              let newTask = createTask(input);
+            if(taskInput != null && (taskInput.value != "" && taskInput.value != null)) {
+              let newTask = createTask(taskInput);
               push(taskRef, newTask);
+              taskInput.value = "";
             }
-          });
+        });
+
+        friendForm?.addEventListener("submit", e => {
+          e.preventDefault();
+          if(userIdent != null && (userIdent.value != "" && userIdent.value != null)){
+            friendReq(userIdent.value, queryFilter.value, database, user, friendList, notif);
+          }
+        });
+        
     }
     else{
         whenSignedIn.hidden = true;

@@ -1,6 +1,5 @@
 import { v4 as uuidV4 } from "uuid";
-import { DataSnapshot, Database, child, equalTo, get, getDatabase, onValue, push, ref, set, query, orderByValue, orderByKey, orderByChild, update } from "firebase/database";
-import { User } from "firebase/auth";
+import { Database, child, get, ref, update } from "firebase/database";
 
 
  export class Task {
@@ -8,12 +7,16 @@ import { User } from "firebase/auth";
     completed: boolean;    
     id: string;
     title: string;
+    description: string;
+    public: boolean;
 
-    constructor(myId : string, myTitle: string, myCompleted: boolean, myDate: string){
+    constructor(myId : string, myTitle: string,  myCompleted: boolean, myDate: string){
       this.id = myId;
       this.title = myTitle;
       this.completed = myCompleted;
       this.createdAt = myDate;
+      this.description = "placeholder";
+      this.public = true;
     }
   }
 

@@ -5,31 +5,62 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
-  <script src="bundle.js" defer></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+  <script src="bundle.js" defer crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous" defer></script>
 </head>
 <body>
 
-  <div id="whenSignedOut">
-    <button id="signInBtn">Sign In</button>
-  </div>
+  <main class="container">
+  
+    <div id="whenSignedIn" hidden>
 
-  <div id="whenSignedIn">
-    <div id="userDetails"></div>
-    <form id="new-task-form">
-      <input type="text" id="new-task-title">
-      <button type="submit">Add</button>
-    </form>
-    <ul id="list"></ul>
-    <!--
-      Button used for debugging purposes, commented out instead of deleted just in case
+      <div class="row justify-content-between">
+        <div id="userDetails" class="col-8"></div>
+        <div class="col-4 align-self-center">
+          <button id="signOutBtn">Sign Out</button>
+        </div>
+      </div>
+      
+      <div class="row">
+        <div class="col">
+          <div id="myTasks">
+            <form id="new-task-form">
+              <input type="text" id="new-task-title">
+              <button type="submit">Add</button>
+            </form>
+            <ul id="list"></ul>
+          </div>
+        </div>
+      
+          <div id="friends" class="col-4">
+            <form id="add-friend-form">
+              <select name="search-type" id="search-filter">
+                <option value="username">Name</option>
+                <option value="email">E-mail</option>
+                <!-- <option value="id">ID</option> -->
+              </select>
+              <input type="text" id="identifier" value="0">
+              <button type="submit">Search</button>
+            </form>
 
-    <div>
-      <button id="addStuff">Add Data</button>
-    </div>
-    -->
+            <div>
+              <div id="notif" class="rounded"></div>
+              <ul id="friendsList"></ul>
+            </div>
 
-    <button id="signOutBtn">Sign Out</button>
-  </div>
+          </div>
+      
+
+        </div>
+      </div>
+
+      <div id="whenSignedOut">
+        <button id="signInBtn">Sign In</button>
+      </div>
+  </main>
+
+  <footer></footer>
 
 </body>
 </html>
