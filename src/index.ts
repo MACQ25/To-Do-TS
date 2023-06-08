@@ -2,11 +2,7 @@ import { Task, loadTasks, addListItem, saveTasks, createTask } from "./to-do";
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import { child, getDatabase, ref, set, get, push, onChildAdded } from "firebase/database";
-import corsModule from "cors";
-import { friendReq } from "./friendList";
-
-const cors = corsModule({origin:true});
-
+import { checkMyRequests, friendReq, requestReceiver } from "./friendList";
 
 var firebaseConfig = {
     apiKey: "AIzaSyDU2JcTurCRB9v1_y-O2-Sb2wRDnYcb154",
@@ -39,6 +35,7 @@ const taskInput = document.querySelector<HTMLInputElement>("#new-task-title");
 const friendForm = document.querySelector("#add-friend-form") as HTMLFormElement
 const queryFilter = document.querySelector("#search-filter") as HTMLSelectElement
 const userIdent = document.querySelector("#identifier") as HTMLInputElement
+const reqList = document.querySelector("#reqList") as HTMLUListElement
 const friendList = document.querySelector("#friendsList") as HTMLUListElement
 const notif = document.querySelector("#notif") as HTMLDivElement
 
@@ -96,6 +93,9 @@ onAuthStateChanged(auth, user => {
             friendReq(userIdent.value, queryFilter.value, database, user, friendList, notif);
           }
         });
+
+        requestReceiver(database, user, reqList);
+        checkMyRequests(database, user);
         
     }
     else{
